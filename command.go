@@ -8,7 +8,7 @@ import (
 type command struct {
 	name        string
 	description string
-	execute     func() error
+	execute     func(conf *config) error
 }
 
 var commands map[string]command
@@ -25,6 +25,16 @@ func init() {
 			description: "exits pokedex CLI",
 			execute:     handleExit,
 		},
+		"map": {
+			name:        "map",
+			description: "prints the the next page of locations",
+			execute:     handleMap,
+		},
+		"mapb": {
+			name:        "mapb",
+			description: "prints the the previous page of locations",
+			execute:     handleMapb,
+		},
 	}
 }
 
@@ -37,7 +47,7 @@ func getCommand(name string) *command {
 	return &cmd
 }
 
-func handleHelp() error {
+func handleHelp(conf *config) error {
 	fmt.Println("  help:")
 	fmt.Printf("    %s\n\n", commands["help"].description)
 
@@ -51,8 +61,32 @@ func handleHelp() error {
 	return nil
 }
 
-func handleExit() error {
+func handleExit(conf *config) error {
 	fmt.Println("See you!")
 	os.Exit(0)
+	return nil
+}
+
+func handleMap(conf *config) error {
+	return execMap(conf.next, conf)
+}
+
+func handleMapb(conf *config) error {
+	return execMap(conf.previous, conf)
+}
+
+func execMap(url *string, conf *config) error {
+	res, err := getLocations(url)
+	if err != nil {
+		return err
+	}
+
+	conf.next = res.Next
+	conf.previous = res.Previous
+	for _, loc := range res.Results {
+		fmt.Printf("  - %s\n", loc.Name)
+	}
+	fmt.Println()
+
 	return nil
 }
