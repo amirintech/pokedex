@@ -5,15 +5,19 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 )
 
 type config struct {
 	next     *string
 	previous *string
+	cache    *cache
 }
 
 func repl() {
-	conf := &config{}
+	conf := &config{
+		cache: newCache(time.Minute * 10),
+	}
 	fmt.Println("Welcome to Pokedex CLI!")
 
 	for {

@@ -76,14 +76,21 @@ func handleMapb(conf *config) error {
 }
 
 func execMap(url *string, conf *config) error {
-	res, err := getLocations(url)
-	if err != nil {
-		return err
+	var locations []location
+	if url == nil || len(locations) == 0 {
+		res, err := getLocations(url)
+		if err != nil {
+			return err
+		}
+		conf.next = res.Next
+		conf.previous = res.Previous
+		locations = res.Results
+		conf.cache.add(defaultUrl, locations)
+	} else {
+		locations = conf.cache.get(*url)
 	}
 
-	conf.next = res.Next
-	conf.previous = res.Previous
-	for _, loc := range res.Results {
+	for _, loc := range locations {
 		fmt.Printf("  - %s\n", loc.Name)
 	}
 	fmt.Println()
